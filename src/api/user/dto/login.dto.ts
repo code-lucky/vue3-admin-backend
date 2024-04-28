@@ -10,5 +10,5 @@ export class LoginDto{
     @IsNotEmpty({
         message: '邮箱不能为空'
     })
-    email: string;
+    user_name: string;
 }

@@ -7,10 +7,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { UpdatePasswordDto } from './dto/update_paddword.dto';
 import { Request } from 'express';
-import axios from 'axios';
 
 @Controller('user')
 export class UserController {
@@ -28,16 +25,6 @@ export class UserController {
 
   @Inject(RedisService)
   private redisService: RedisService;
-
-  /**
-   * 注册
-   * @param user 
-   * @returns 
-   */
-  @Post('register')
-  async register(@Body() user: CreateUserDto) {
-    // return await this.userService.createUser(user);
-  }
 
   /**
    * 登录
@@ -62,8 +49,15 @@ export class UserController {
     return vo;
   }
   
+  @RequireLogin()
   @Post('addUser')
   async addUser(@Body() user: CreateUserDto){
     return await this.userService.createUser(user);
+  }
+
+  @RequireLogin()
+  @Get('userInfo')
+  async getUserInfo(@Req() req: Request){
+    return await this.userService.getUserInfo(req.user.userId);
   }
 }

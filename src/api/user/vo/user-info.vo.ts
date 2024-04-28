@@ -1,19 +1,19 @@
 import { ApiProperty } from "@nestjs/swagger";
 
 
-export class UserInfoVo{
-  @ApiProperty()
-  id: number;
-  
-  @ApiProperty()
-  user_name: string;
+export class UserInfo {
+    @ApiProperty()
+    id: number;
 
-  @ApiProperty()
-  email: string;
+    @ApiProperty()
+    user_name: string;
 
-  @ApiProperty()
-  head_pic: string;
+    @ApiProperty()
+    head_pic: string;
 
-  @ApiProperty()
-  phone_number: string;
+    @ApiProperty()
+    role_name: string;
+
+    @ApiProperty()
+    create_time: Date;
 }

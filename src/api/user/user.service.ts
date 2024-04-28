@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { Like, Repository } from 'typeorm';
+import { createQueryBuilder, getConnection, getManager, getRepository, Like, Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entitys/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -7,8 +7,7 @@ import { RedisService } from 'src/redis/redis.service';
 import { md5 } from 'src/utils/md5';
 import { LoginDto } from './dto/login.dto';
 import { LoginUserVo } from './vo/login-user.vo';
-import { UpdatePasswordDto } from './dto/update_paddword.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { Role } from '../entitys/role.entity';
 @Injectable()
 export class UserService {
 
@@ -25,7 +24,7 @@ export class UserService {
   async login(user: LoginDto) {
     const findUser = await this.userRepository.findOne({
       where: {
-        email: user.email,
+        user_name: user.user_name,
         isDelete: 0
       }
     });
@@ -36,14 +35,13 @@ export class UserService {
     if (findUser.password !== md5(user.password)) {
       throw new HttpException('密码错误', HttpStatus.BAD_REQUEST);
     }
-    
+
     const vo = new LoginUserVo();
     vo.userInfo = {
       id: findUser.id,
-      user_name: findUser.userName,
-      email: findUser.email,
+      user_name: findUser.user_name,
       head_pic: findUser.head_pic,
-      phone_number: findUser.phone_number
+      create_time: findUser.create_time
     };
 
     return vo;
@@ -54,49 +52,47 @@ export class UserService {
    * @param userId 
    */
   async getUserInfo(userId: number) {
-    const user = await this.userRepository.findOne({
-      where: {
-        id: userId,
-        isDelete: 0
-      }
-    });
-    if (!user) {
-      throw new HttpException('用户不存在', HttpStatus.BAD_REQUEST);
-    }
-    return user;
+    const userInfo = await getConnection()
+      .createQueryBuilder()
+      .select([
+        'user.id AS id',
+        'user.user_name AS user_name',
+        'role.roleName AS role_name' // 修改为 roleName
+      ])
+      .from(User, 'user')
+      .leftJoin(Role, 'role', 'role.id = user.roleId')
+      .where('user.id = :id', { id: userId })
+      .getRawOne();
+
+    return userInfo;
   }
 
-
   /**
-   * 更新用户信息
-   * @param userId 
+   * 添加用户
    * @param user 
    */
-  async updatePassword(userId: number,passwordDto: UpdatePasswordDto) {
-    const user = await this.userRepository.findOne({
+  async createUser(user: CreateUserDto) {
+    const findUser = await this.userRepository.findOne({
       where: {
-        id: userId,
+        user_name: user.user_name,
         isDelete: 0
       }
     });
-    if (!user) {
-      throw new HttpException('用户不存在', HttpStatus.BAD_REQUEST);
+
+    if (findUser) {
+      throw new HttpException('用户名已存在', HttpStatus.BAD_REQUEST);
     }
 
-    if (user.password !== md5(passwordDto.old_password)) {
-      throw new HttpException('原密码错误', HttpStatus.BAD_REQUEST);
-    }
-
-    if (passwordDto.new_password !== passwordDto.confirm_password) {
-      throw new HttpException('两次密码不一致', HttpStatus.BAD_REQUEST);
-    }
-
-    user.password = md5(passwordDto.new_password);
     try {
-      await this.userRepository.save(user);
-      return '密码修改成功';
-    } catch (error) {
-      throw new HttpException('密码修改失败', HttpStatus.BAD_REQUEST);
+      const addUser = new User();
+      addUser.user_name = user.user_name;
+      addUser.password = md5(user.password);
+      addUser.head_pic = user.head_pic;
+      addUser.roleId = user.roleId;
+      await this.userRepository.save(addUser);
+      return '添加用户成功';
+    } catch (e) {
+      throw new HttpException('添加用户失败', HttpStatus.BAD_REQUEST);
     }
   }
 }

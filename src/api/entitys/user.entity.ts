@@ -13,7 +13,7 @@ export class User{
         comment: '用户名称',
         name: 'user_name'
     })
-    userName: string;
+    user_name: string;
 
     @Column({
         comment: '用户密码'
@@ -61,14 +61,16 @@ export class User{
     @CreateDateColumn({
         name: 'create_time'
     })
-    createTime: Date;
+    create_time: Date;
 
     @CreateDateColumn({
         name: 'update_time'
     })
-    updateTime: Date;
-
+    update_time: Date;
 
     @ManyToOne(() => Role, role => role.user)
     role: Role;
+
+    @Column()
+    roleId: number;
 }
