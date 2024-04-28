@@ -1,5 +1,6 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { RoleData } from "./role-data.entity";
+import { User } from "./user.entity";
 
 @Entity({
     name: 'role'
@@ -34,4 +35,7 @@ export class Role{
 
     @OneToMany(() => RoleData, roleData => roleData.role)
     roleData: RoleData[];
+
+    @OneToMany(() => User, user => user.role)
+    user: User;
 }

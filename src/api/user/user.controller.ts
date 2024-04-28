@@ -36,7 +36,7 @@ export class UserController {
    */
   @Post('register')
   async register(@Body() user: CreateUserDto) {
-    return await this.userService.createUser(user);
+    // return await this.userService.createUser(user);
   }
 
   /**
@@ -61,58 +61,9 @@ export class UserController {
     });
     return vo;
   }
-
-  /**
-   * 获取用户信息
-   * @param userId 
-   * @returns 
-   */
-  @Get('user')
-  @RequireLogin()
-  async getUserProfile(@Req() request: Request) {
-    return await this.userService.getUserInfo(request.user.userId);
-  }
-
-  /**
-   * 更新密码
-   * @param request 
-   * @param passwordDto 
-   * @returns 
-   */
-  @Post('update/password')
-  @RequireLogin()
-  async updatePassword(@Req() request: Request, @Body() passwordDto: UpdatePasswordDto) {
-    return await this.userService.updatePassword(request.user.userId, passwordDto);
-  }
-
-  /**
-   * 获取验证码
-   * @param email
-   * @returns
-   */
-  @Get('captcha/register')
-  async captcha(@Query('email') email: String) {
-    const code = Math.random().toString().slice(2, 8);
-
-    await this.redisService.set(`captcha_${email}`, code, 5 * 60);
-
-    await this.emailService.sendMail({
-      to: email,
-      subject: '注册验证码',
-      html: `<p>你的注册验证码是 ${code}</p>`
-    });
-    return '发送成功';
-  }
-
-
-  @Get('wx/login')
-  async wxLogin(@Query('code') code: string) {
-    try {
-      const reqUrl = `https://api.weixin.qq.com/sns/jscode2session?appid=${this.configService.get('wechat_appid')}&secret=${this.configService.get('wechat_secret')}&js_code=${code}&grant_type=authorization_code`
-      const response = await axios.get(reqUrl)
-      return response.data
-    } catch (e) {
-      throw new HttpException('微信登录失败', HttpStatus.BAD_REQUEST)
-    }
+  
+  @Post('addUser')
+  async addUser(@Body() user: CreateUserDto){
+    return await this.userService.createUser(user);
   }
 }

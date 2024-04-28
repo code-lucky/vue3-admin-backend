@@ -1,4 +1,5 @@
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Role } from "./role.entity";
 
 @Entity({
     name: 'user'
@@ -18,12 +19,6 @@ export class User{
         comment: '用户密码'
     })
     password: string;
-
-    @Column({
-        comment: '用户角色ID',
-        name: 'role_id'
-    })
-    roleId: number;
 
     @Column({
         comment: '用户头像',
@@ -72,4 +67,8 @@ export class User{
         name: 'update_time'
     })
     updateTime: Date;
+
+
+    @ManyToOne(() => Role, role => role.user)
+    role: Role;
 }

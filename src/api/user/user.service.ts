@@ -19,41 +19,6 @@ export class UserService {
   private redisService: RedisService;
 
   /**
-   * 用户注册
-   * @param user 
-   * @returns 
-   */
-  async createUser(user: CreateUserDto) {
-    // 获取注册验证码
-    const captcha = await this.redisService.get(`captcha_${user.email}`);
-
-    if (!captcha) {
-      throw new HttpException('验证码已过期', HttpStatus.BAD_REQUEST);
-    }
-
-    if (user.captcha !== captcha) {
-      throw new HttpException('验证码错误', HttpStatus.BAD_REQUEST);
-    }
-
-    const findUser = await this.userRepository.findOneBy({ email: user.email });
-
-    if (findUser) {
-      throw new HttpException('邮箱已注册', HttpStatus.BAD_REQUEST);
-    }
-
-    const newUser = new User();
-    newUser.email = user.email;
-    newUser.password = md5(user.password);
-    newUser.userName = user.email;
-    try {
-      await this.userRepository.save(newUser);
-      return '注册成功';
-    } catch (error) {
-      throw new HttpException('注册失败', HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  /**
    * 用户登录
    * @param user 
    */
