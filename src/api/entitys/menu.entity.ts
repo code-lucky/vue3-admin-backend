@@ -11,9 +11,8 @@ export class Menu{
 
     @Column({
         comment: '菜单名称',
-        name: 'menu_name'
     })
-    menuName: string;
+    menu_name: string;
 
     @Column({
         comment: '菜单父ID',
@@ -23,23 +22,20 @@ export class Menu{
 
     @Column({
         comment: '菜单路径',
-        name: 'menu_path'
     })
-    menuPath: string;
+    menu_path: string;
 
     @Column({
         comment: '菜单组件，指向的文件名称',
-        name: 'menu_component',
         nullable: true
     })
-    menuComponent: string;
+    menu_component: string;
 
     @Column({
         comment: '菜单图标',
-        name: 'menu_icon',
         nullable: true
     })
-    menuIcon: string;
+    menu_icon: string;
     
     @Column({
         comment: '菜单排序',
@@ -52,17 +48,17 @@ export class Menu{
         comment: '逻辑删除0是正常状态，1是删除',
         default: 0
     })
-    isDelete: number;
+    is_delete: number;
 
     @CreateDateColumn({
         name: 'create_time'
     })
-    createTime: Date;
+    create_time: Date;
 
     @CreateDateColumn({
         name: 'update_time'
     })
-    updateTime: Date;
+    update_time: Date;
 
     @OneToMany(() => RoleData, roleData => roleData.menu)
     roleData: RoleData[];

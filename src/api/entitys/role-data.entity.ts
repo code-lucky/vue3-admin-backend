@@ -11,21 +11,20 @@ export class RoleData{
     id: number;
 
     @Column({
-        name: 'is_delete',
         comment: '逻辑删除0是正常状态，1是删除',
         default: 0
     })
-    isDelete: number;
+    is_delete: number;
 
     @CreateDateColumn({
         name: 'create_time'
     })
-    createTime: Date;
+    create_time: Date;
 
     @CreateDateColumn({
         name: 'update_time'
     })
-    updateTime: Date;
+    update_time: Date;
 
     @ManyToOne(() => Role, role => role.roleData)
     role: Role;
@@ -33,4 +32,13 @@ export class RoleData{
     @ManyToOne(() => Menu, menu => menu.roleData)
     menu: Menu;
 
+    @Column({
+        comment: '角色ID'
+    })
+    roleId: Number;
+
+    @Column({
+        comment: '菜单ID'
+    })
+    menuId: Number; 
 }

@@ -52,11 +52,10 @@ export class User{
     status: number;
 
     @Column({
-        name: 'is_delete',
         comment: '用户逻辑删除0是正常状态，1是删除',
         default: 0
     })
-    isDelete: number;
+    is_delete: number;
 
     @CreateDateColumn({
         name: 'create_time'

@@ -14,24 +14,24 @@ export class Role{
         comment: '角色名称',
         name: 'role_name'
     })
-    roleName: string;
+    role_name: string;
 
     @Column({
         name: 'is_delete',
         comment: '逻辑删除0是正常状态，1是删除',
         default: 0
     })
-    isDelete: number;
+    is_delete: number;
 
     @CreateDateColumn({
         name: 'create_time'
     })
-    createTime: Date;
+    create_time: Date;
 
     @CreateDateColumn({
         name: 'update_time'
     })
-    updateTime: Date;
+    update_time: Date;
 
     @OneToMany(() => RoleData, roleData => roleData.role)
     roleData: RoleData[];

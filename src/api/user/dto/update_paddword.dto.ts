@@ -10,7 +10,7 @@ export class UpdatePasswordDto{
     @IsNotEmpty({
         message: '新密码不能为空'
     })
-    new_password: string;
+    password: string;
 
     @IsNotEmpty({
         message: '确认密码不能为空'

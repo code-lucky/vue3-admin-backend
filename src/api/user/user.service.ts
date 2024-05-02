@@ -1,5 +1,5 @@
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { createQueryBuilder, getConnection, getManager, getRepository, Like, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from '../entitys/user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -8,6 +8,7 @@ import { md5 } from 'src/utils/md5';
 import { LoginDto } from './dto/login.dto';
 import { LoginUserVo } from './vo/login-user.vo';
 import { Role } from '../entitys/role.entity';
+import { UpdatePasswordDto } from './dto/update_paddword.dto';
 @Injectable()
 export class UserService {
 
@@ -25,7 +26,7 @@ export class UserService {
     const findUser = await this.userRepository.findOne({
       where: {
         user_name: user.user_name,
-        isDelete: 0
+        is_delete: 0
       }
     });
     if (!findUser) {
@@ -52,18 +53,22 @@ export class UserService {
    * @param userId 
    */
   async getUserInfo(userId: number) {
-    const userInfo = await getConnection()
-      .createQueryBuilder()
+    const userInfo = await this.userRepository.createQueryBuilder()
       .select([
         'user.id AS id',
         'user.user_name AS user_name',
-        'role.roleName AS role_name' // 修改为 roleName
+        'user.head_pic AS head_pic',
+        'user.create_time AS create_time',
+        'role.id AS role_id',
+        'role.role_name AS role_name'
       ])
-      .from(User, 'user')
       .leftJoin(Role, 'role', 'role.id = user.roleId')
-      .where('user.id = :id', { id: userId })
+      .where('user.id = :id and user.is_delete = 0', { id: userId })
       .getRawOne();
-
+    
+    if(!userInfo) {
+      throw new HttpException('用户不存在', HttpStatus.BAD_REQUEST);
+    }
     return userInfo;
   }
 
@@ -75,7 +80,7 @@ export class UserService {
     const findUser = await this.userRepository.findOne({
       where: {
         user_name: user.user_name,
-        isDelete: 0
+        is_delete: 0
       }
     });
 
@@ -95,4 +100,41 @@ export class UserService {
       throw new HttpException('添加用户失败', HttpStatus.BAD_REQUEST);
     }
   }
+
+
+  /**
+   * 
+   * @param userId 用户id
+   * @param passwordDto 密码dto
+   * @returns 
+   */
+  async updatePassword(userId: number, passwordDto: UpdatePasswordDto) {
+    const findUser = await this.userRepository.findOne({
+      where: {
+        id: userId,
+        is_delete: 0
+      }
+    });
+
+    if (!findUser) {
+      throw new HttpException('用户不存在', HttpStatus.BAD_REQUEST);
+    }
+
+    if (findUser.password !== md5(passwordDto.old_password)) {
+      throw new HttpException('原密码错误', HttpStatus.BAD_REQUEST);
+    }
+
+    if (passwordDto.password !== passwordDto.confirm_password) {
+      throw new HttpException('两次密码不一致', HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+      findUser.password = md5(passwordDto.password);
+      await this.userRepository.save(findUser);
+      return '修改密码成功';
+    } catch (err) {
+      throw new HttpException('修改密码失败', HttpStatus.BAD_REQUEST);
+    }
+  }
+
 }

@@ -16,6 +16,8 @@ import { LoginGuard } from './guard/login.guard';
 import { FileModule } from './api/file/file.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { MenuModule } from './api/menu/menu.module';
+import { RoleModule } from './api/role/role.module';
 
 @Module({
   imports: [
@@ -92,7 +94,9 @@ import { join } from 'path';
     RedisModule,
     EmailModule,
     UserModule,
-    FileModule
+    FileModule,
+    MenuModule,
+    RoleModule
   ],
   controllers: [AppController],
   providers: [

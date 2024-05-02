@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Request } from 'express';
+import { UpdatePasswordDto } from './dto/update_paddword.dto';
 
 @Controller('user')
 export class UserController {
@@ -48,16 +49,38 @@ export class UserController {
     });
     return vo;
   }
-  
+
+  /**
+   * 
+   * @param user userDto
+   * @returns 
+   */
   @RequireLogin()
   @Post('addUser')
-  async addUser(@Body() user: CreateUserDto){
+  async addUser(@Body() user: CreateUserDto) {
     return await this.userService.createUser(user);
   }
 
+  /**
+   * 
+   * @param req 获取token中的用户id
+   * @returns 
+   */
   @RequireLogin()
   @Get('userInfo')
-  async getUserInfo(@Req() req: Request){
+  async getUserInfo(@Req() req: Request) {
     return await this.userService.getUserInfo(req.user.userId);
+  }
+
+  /**
+   * 
+   * @param updatePasswordDto 更新密码dto
+   * @param req 获取token中的用户id
+   * @returns 
+   */
+  @RequireLogin()
+  @Post('updatePassword')
+  async resetPassword(@Body() updatePasswordDto: UpdatePasswordDto, @Req() req: Request) {
+    return await this.userService.updatePassword(req.user.userId, updatePasswordDto);
   }
 }
