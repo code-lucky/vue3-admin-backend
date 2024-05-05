@@ -9,6 +9,7 @@ import { LoginDto } from './dto/login.dto';
 import { LoginUserVo } from './vo/login-user.vo';
 import { Role } from '../entitys/role.entity';
 import { UpdatePasswordDto } from './dto/update_paddword.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 @Injectable()
 export class UserService {
 
@@ -137,4 +138,25 @@ export class UserService {
     }
   }
 
+  /**
+   * 
+   * @param userId 用户id
+   * @param userDto 用户dto
+   * @returns 
+   */
+  async modifyUser(userId: number, userDto: UpdateUserDto) {
+    
+    const user = new User();
+    user.id = userId;
+    user.user_name = userDto.user_name;
+    user.head_pic = userDto.head_pic;
+
+    try{
+      await this.userRepository.save(user);
+      return '修改用户成功';
+    }catch(err){
+      throw new HttpException('修改用户失败', HttpStatus.BAD_REQUEST);
+    }
+    
+  }
 }

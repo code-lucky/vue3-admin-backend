@@ -9,6 +9,7 @@ import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { Request } from 'express';
 import { UpdatePasswordDto } from './dto/update_paddword.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -82,5 +83,17 @@ export class UserController {
   @Post('updatePassword')
   async resetPassword(@Body() updatePasswordDto: UpdatePasswordDto, @Req() req: Request) {
     return await this.userService.updatePassword(req.user.userId, updatePasswordDto);
+  }
+
+  /**
+   * 
+   * @param req 获取token中的用户id
+   * @param user 更新用户dto
+   * @returns 
+   */
+  @RequireLogin()
+  @Post('updateUser')
+  async updateUser(@Req() req: Request, @Body() user: UpdateUserDto) {
+    return await this.userService.modifyUser(req.user.userId, user);
   }
 }
