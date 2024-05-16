@@ -1,7 +1,6 @@
 import * as multer from "multer";
 import * as fs from 'fs';
 import * as path from "path";
-import { Constant } from "src/utils/constant";
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         try {

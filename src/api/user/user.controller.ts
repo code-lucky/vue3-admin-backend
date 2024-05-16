@@ -7,9 +7,10 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { LoginDto } from './dto/login.dto';
 import { CreateUserDto } from './dto/create-user.dto';
-import { Request } from 'express';
+import { query, Request } from 'express';
 import { UpdatePasswordDto } from './dto/update_paddword.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { changeEmailDto } from './dto/change-email.dto';
 
 @Controller('user')
 export class UserController {
@@ -95,5 +96,29 @@ export class UserController {
   @Post('updateUser')
   async updateUser(@Req() req: Request, @Body() user: UpdateUserDto) {
     return await this.userService.modifyUser(req.user.userId, user);
+  }
+
+  /**
+   * 
+   * @param emailObj 修改邮箱的dto
+   * @param req 请求token
+   * @returns 
+   */
+  @Post('changeEmail')
+  @RequireLogin()
+  async changeEmail(@Body() emailObj: changeEmailDto, @Req() req: Request) {
+    return await this.userService.changeEmail(emailObj, req.user.userId);
+  }
+
+  /**
+   * 
+   * @param email 新邮箱
+   * @param req 请求token
+   * @returns 
+   */
+  @Get('changeEmailSendCode')
+  @RequireLogin()
+  async changeEmailSendCode(@Query('email') email: string, @Req() req: Request) {
+    return await this.userService.sendEmailCode(email, req.user.userId);
   }
 }

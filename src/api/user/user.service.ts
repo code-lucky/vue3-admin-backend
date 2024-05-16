@@ -10,6 +10,8 @@ import { LoginUserVo } from './vo/login-user.vo';
 import { Role } from '../entitys/role.entity';
 import { UpdatePasswordDto } from './dto/update_paddword.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { EmailService } from '../email/email.service';
+import { changeEmailDto } from './dto/change-email.dto';
 @Injectable()
 export class UserService {
 
@@ -18,6 +20,9 @@ export class UserService {
 
   @Inject(RedisService)
   private redisService: RedisService;
+
+  @Inject(EmailService)
+  private emailService: EmailService;
 
   /**
    * 用户登录
@@ -59,6 +64,7 @@ export class UserService {
         'user.id AS id',
         'user.user_name AS user_name',
         'user.head_pic AS head_pic',
+        'user.email AS email',
         'user.create_time AS create_time',
         'role.id AS role_id',
         'role.role_name AS role_name'
@@ -66,8 +72,8 @@ export class UserService {
       .leftJoin(Role, 'role', 'role.id = user.roleId')
       .where('user.id = :id and user.is_delete = 0', { id: userId })
       .getRawOne();
-    
-    if(!userInfo) {
+
+    if (!userInfo) {
       throw new HttpException('用户不存在', HttpStatus.BAD_REQUEST);
     }
     return userInfo;
@@ -145,18 +151,63 @@ export class UserService {
    * @returns 
    */
   async modifyUser(userId: number, userDto: UpdateUserDto) {
-    
+
     const user = new User();
     user.id = userId;
     user.user_name = userDto.user_name;
     user.head_pic = userDto.head_pic;
 
-    try{
+    try {
       await this.userRepository.save(user);
       return '修改用户成功';
-    }catch(err){
+    } catch (err) {
       throw new HttpException('修改用户失败', HttpStatus.BAD_REQUEST);
     }
-    
+
+  }
+
+  /**
+   * 
+   * @param emailObj 修改邮箱obj
+   * @param userId 
+   * @returns 
+   */
+  async changeEmail(emailObj: changeEmailDto, userId: number) {
+    const { current_email, email, captcha } = emailObj;
+
+    if(current_email === email) {
+      throw new HttpException('新邮箱不能和旧邮箱相同', HttpStatus.BAD_REQUEST);
+    }
+
+    return '修改邮箱成功';
+  }
+
+  /**
+   * 
+   * @param email 邮箱地址
+   * @param userId 
+   * @returns 
+   */
+  async sendEmailCode(email: string, userId: number) {
+    if (!email) {
+      throw new HttpException('邮箱不能为空', HttpStatus.BAD_REQUEST);
+    }
+
+    if (!/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/.test(email)) {
+      throw new HttpException('邮箱格式不正确', HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+      const code = Math.floor(Math.random() * 1000000).toString();
+      await this.redisService.set(`change_email_captcha_${email}`, code, 60 * 5);
+      await this.emailService.sendMail({
+        to: email,
+        subject: '注册验证码',
+        html: `<p>您修改邮箱的验证码是 ${code}</p>`
+      });
+      return '发送成功';
+    } catch (e) {
+      throw new HttpException('发送邮件失败', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }
