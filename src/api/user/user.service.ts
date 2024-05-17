@@ -175,11 +175,41 @@ export class UserService {
   async changeEmail(emailObj: changeEmailDto, userId: number) {
     const { current_email, email, captcha } = emailObj;
 
-    if(current_email === email) {
+    if (current_email === email) {
       throw new HttpException('新邮箱不能和旧邮箱相同', HttpStatus.BAD_REQUEST);
     }
 
-    return '修改邮箱成功';
+    if (!/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/.test(email)) {
+      throw new HttpException('邮箱格式不正确', HttpStatus.BAD_REQUEST);
+    }
+
+    const code = await this.redisService.get(`change_email_captcha_${email}`);
+    if (code !== captcha) {
+      throw new HttpException('验证码错误', HttpStatus.BAD_REQUEST);
+    }
+
+    const user = await this.userRepository.findOne({
+      where: {
+        email: email,
+        is_delete: 0
+      }
+    });
+
+    if (user) {
+      throw new HttpException('该邮箱已被使用', HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+      await this.userRepository.update(userId, {
+        email: email
+      });
+
+      await this.redisService.del(`change_email_captcha_${email}`);
+
+      return '修改邮箱成功';
+    } catch (e) {
+      throw new HttpException('修改邮箱失败', HttpStatus.BAD_REQUEST);
+    }
   }
 
   /**

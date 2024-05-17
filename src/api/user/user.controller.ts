@@ -104,7 +104,7 @@ export class UserController {
    * @param req 请求token
    * @returns 
    */
-  @Post('changeEmail')
+  @Post('updateEmail')
   @RequireLogin()
   async changeEmail(@Body() emailObj: changeEmailDto, @Req() req: Request) {
     return await this.userService.changeEmail(emailObj, req.user.userId);
@@ -116,7 +116,7 @@ export class UserController {
    * @param req 请求token
    * @returns 
    */
-  @Get('changeEmailSendCode')
+  @Get('updateEmailSendCode')
   @RequireLogin()
   async changeEmailSendCode(@Query('email') email: string, @Req() req: Request) {
     return await this.userService.sendEmailCode(email, req.user.userId);
