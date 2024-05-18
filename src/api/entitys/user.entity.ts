@@ -70,6 +70,9 @@ export class User{
     @ManyToOne(() => Role, role => role.user)
     role: Role;
 
-    @Column()
+    @Column({
+        comment: '角色id',
+        default: 2,
+    })
     roleId: number;
 }

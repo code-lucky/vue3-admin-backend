@@ -11,6 +11,7 @@ import { query, Request } from 'express';
 import { UpdatePasswordDto } from './dto/update_paddword.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { changeEmailDto } from './dto/change-email.dto';
+import { RegitserUserDto } from './dto/regitser-user.dto';
 
 @Controller('user')
 export class UserController {
@@ -82,12 +83,12 @@ export class UserController {
    */
   @RequireLogin()
   @Post('updatePassword')
-  async resetPassword(@Body() updatePasswordDto: UpdatePasswordDto, @Req() req: Request) {
+  async updatePassword(@Body() updatePasswordDto: UpdatePasswordDto, @Req() req: Request) {
     return await this.userService.updatePassword(req.user.userId, updatePasswordDto);
   }
 
   /**
-   * 
+   * 更新用户信息
    * @param req 获取token中的用户id
    * @param user 更新用户dto
    * @returns 
@@ -99,7 +100,7 @@ export class UserController {
   }
 
   /**
-   * 
+   * 修改邮箱
    * @param emailObj 修改邮箱的dto
    * @param req 请求token
    * @returns 
@@ -111,7 +112,7 @@ export class UserController {
   }
 
   /**
-   * 
+   * 更新邮箱验证码
    * @param email 新邮箱
    * @param req 请求token
    * @returns 
@@ -120,5 +121,41 @@ export class UserController {
   @RequireLogin()
   async changeEmailSendCode(@Query('email') email: string, @Req() req: Request) {
     return await this.userService.sendEmailCode(email, req.user.userId);
+  }
+
+  /**
+   * 注册发送验证码
+   * @param email 邮箱
+   * @returns 
+   */
+  @Get('registerCode')
+  async sendRegisterCode(@Query('email')email: string) {
+    return await this.userService.sendRegisterCode(email);
+  }
+
+  /**
+   * 用户注册
+   * @param user 
+   * @returns 
+   */
+  @Post('register')
+  async regiterUser(@Body() user: RegitserUserDto) {
+    return await this.userService.register(user);
+  }
+
+  /**
+   * 忘记密码发送验证码
+   * @param email 邮箱
+   * @returns 
+   */
+  @Get('resetPasswordCode')
+  async sendForgotPasswordCode(@Query('email') email: string) {
+    return await this.userService.sendForgotPasswordCode(email);
+  }
+
+
+  @Post('resetPassword')
+  async resetPassword(@Query('email') email: string, @Query('captcha') captcha: string) {
+    return await this.userService.resetPassword(email, captcha);
   }
 }

@@ -12,6 +12,7 @@ import { UpdatePasswordDto } from './dto/update_paddword.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { EmailService } from '../email/email.service';
 import { changeEmailDto } from './dto/change-email.dto';
+import { RegitserUserDto } from './dto/regitser-user.dto';
 @Injectable()
 export class UserService {
 
@@ -213,7 +214,7 @@ export class UserService {
   }
 
   /**
-   * 
+   * 修改邮箱验证码
    * @param email 邮箱地址
    * @param userId 
    * @returns 
@@ -238,6 +239,164 @@ export class UserService {
       return '发送成功';
     } catch (e) {
       throw new HttpException('发送邮件失败', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
+  /**
+   * 注册发送验证码
+   * @param email 邮箱
+   * @returns 
+   */
+  async sendRegisterCode(email: string) {
+    if (!email) {
+      throw new HttpException('邮箱不能为空', HttpStatus.BAD_REQUEST);
+    }
+
+    if (!/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/.test(email)) {
+      throw new HttpException('邮箱格式不正确', HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+      const code = Math.floor(Math.random() * 1000000).toString();
+      await this.redisService.set(`register_captcha_${email}`, code, 60 * 5);
+      await this.emailService.sendMail({
+        to: email,
+        subject: '注册验证码',
+        html: `<p>您注册的验证码是 ${code}</p>`
+      });
+      return '发送成功';
+    } catch (e) {
+      throw new HttpException('发送邮件失败', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
+  /**
+   * 用户注册
+   * @param user 
+   * @returns 
+   */
+  async register(user: RegitserUserDto) {
+
+    const code = await this.redisService.get(`register_captcha_${user.email}`);
+
+    console.log(code, user.captcha);
+
+    if (code !== user.captcha) {
+      throw new HttpException('验证码错误', HttpStatus.BAD_REQUEST);
+    }
+
+    const findUser = await this.userRepository.findOne({
+      where: {
+        user_name: user.user_name,
+        is_delete: 0
+      }
+    });
+
+    if (findUser) {
+      throw new HttpException('用户名已存在', HttpStatus.BAD_REQUEST);
+    }
+
+    const userByEmail = await this.userRepository.findOne({
+      where: {
+        email: user.email,
+        is_delete: 0
+      }
+    });
+
+    if (userByEmail) {
+      throw new HttpException('邮箱已被注册', HttpStatus.BAD_REQUEST);
+    }
+    
+    try {
+      const addUser = new User();
+      addUser.user_name = user.user_name;
+      addUser.password = md5(user.password);
+      addUser.email = user.email;
+      await this.userRepository.save(addUser);
+
+      await this.redisService.del(`register_captcha_${user.email}`);
+      return '注册成功';
+    } catch (e) {
+      throw new HttpException('注册失败', HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  /**
+   * 忘记密码发送验证码
+   * @param email 
+   */
+  async sendForgotPasswordCode(email: string) {
+    if (!email) {
+      throw new HttpException('邮箱不能为空', HttpStatus.BAD_REQUEST);
+    }
+
+    if (!/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/.test(email)) {
+      throw new HttpException('邮箱格式不正确', HttpStatus.BAD_REQUEST);
+    }
+
+    const user = await this.userRepository.findOne({
+      where: {
+        email: email,
+        is_delete: 0
+      }
+    });
+
+    if (!user) {
+      throw new HttpException('该邮箱未注册', HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+      const code = Math.floor(Math.random() * 1000000).toString();
+      await this.redisService.set(`forgot_password_captcha_${email}`, code, 60 * 5);
+      await this.emailService.sendMail({
+        to: email,
+        subject: '密码重置验证码',
+        html: `<p>您重置密码的验证码是 ${code}，重置后的新密码是<span style="color: #b53c3c;">123456</span></p>`
+      });
+      return '发送成功';
+    } catch (e) {
+      throw new HttpException('发送邮件失败', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  /**
+   * 重置密码
+   * @param email 
+   * @param captcha 
+   */
+  async resetPassword(email: string, captcha: string) {
+    if (!email) {
+      throw new HttpException('邮箱不能为空', HttpStatus.BAD_REQUEST);
+    }
+
+    if (!captcha) {
+      throw new HttpException('验证码不能为空', HttpStatus.BAD_REQUEST);
+    }
+
+    if (!/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/.test(email)) {
+      throw new HttpException('邮箱格式不正确', HttpStatus.BAD_REQUEST);
+    }
+
+    const code = await this.redisService.get(`forgot_password_captcha_${email}`);
+
+    if (code !== captcha) {
+      throw new HttpException('验证码错误', HttpStatus.BAD_REQUEST);
+    }
+
+    try {
+      await this.userRepository.update({
+        email: email
+      }, {
+        password: md5('123456')
+      });
+
+      await this.redisService.del(`forgot_password_captcha_${email}`);
+
+      return '重置密码成功';
+    } catch (e) {
+      throw new HttpException('重置密码失败', HttpStatus.BAD_REQUEST);
     }
   }
 }
