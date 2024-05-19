@@ -44,6 +44,12 @@ export class Menu{
     sort: number;
 
     @Column({
+        comment: '菜单是否隐藏，0是显示，1是隐藏',
+        default: 0
+    })
+    hide: number;
+
+    @Column({
         name: 'is_delete',
         comment: '逻辑删除0是正常状态，1是删除',
         default: 0
@@ -62,4 +68,5 @@ export class Menu{
 
     @OneToMany(() => RoleData, roleData => roleData.menu)
     roleData: RoleData[];
+  children: any[];
 }

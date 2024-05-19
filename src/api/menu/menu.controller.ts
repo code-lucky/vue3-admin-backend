@@ -21,8 +21,13 @@ export class MenuController {
     return this.menuService.createMenu(createMenuDto);
   }
 
-  @Patch('updateMenu')
+  @Post('updateMenu')
   async updateMenu(@Body() updateMenuDto: UpdateMenuDto) {
     return this.menuService.modifMenu(updateMenuDto);
+  }
+
+  @Get('treeMenu')
+  async treeMenu() {
+    return this.menuService.treeMenu();
   }
 }

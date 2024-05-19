@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Menu } from '../entitys/menu.entity';
@@ -25,6 +25,7 @@ export class MenuService {
         'menu.menu_path AS menu_path',
         'menu.menu_component AS menu_component',
         'menu.menu_icon AS menu_icon',
+        'menu.hide AS hide',
         'menu.sort AS sort',
         'menu.create_time AS create_time',
       ]).where('menu.is_delete = 0')
@@ -52,7 +53,7 @@ export class MenuService {
       await this.menuRepository.save(menu);
       return '创建菜单成功';
     } catch (e) {
-      throw new Error('创建菜单失败');
+      throw new HttpException('创建菜单失败', HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -75,7 +76,42 @@ export class MenuService {
       await this.menuRepository.save(menu);
       return '修改菜单成功';
     } catch (e) {
-      throw new Error('修改菜单失败');
+      throw new HttpException('修改菜单失败', HttpStatus.BAD_REQUEST);
     }
+  }
+
+
+  /**
+   * 
+   * @returns 获取菜单树
+   */
+  async treeMenu() {
+    try {
+      const menuList = await this.menuRepository.find();
+      const tree = this.toTree(menuList, 0);
+      return tree;
+    } catch (e) {
+      throw new HttpException('获取菜单树失败', HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  /**
+   * 格式化成树型菜单
+   * @param data 菜单列表
+   * @param pid 父ID
+   * @returns 
+   */
+  toTree(data: Menu[], pid: number) {
+    const result = [];
+    for (let i = 0; i < data.length; i++) {
+      if (data[i].pid === pid) {
+        const children = this.toTree(data, data[i].id);
+        if (children.length > 0) {
+          data[i].children = children;
+        }
+        result.push(data[i]);
+      }
+    }
+    return result;
   }
 }
