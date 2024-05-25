@@ -30,4 +30,19 @@ export class MenuController {
   async treeMenu() {
     return this.menuService.treeMenu();
   }
+
+  @Get('getMenuByTop')
+  async getMenuByTop() {
+    return this.menuService.getMenuListByTop();
+  }
+
+  @Post('deleteMenu/:id')
+  async deleteMenu(@Param('id') id: string) {
+    return this.menuService.deleteMenu(id);
+  }
+
+  @Get('getMenu/:id')
+  async getMenu(@Param('id') id: number) {
+    return this.menuService.getMenu(id);
+  }
 }

@@ -87,7 +87,7 @@ export class MenuService {
    */
   async treeMenu() {
     try {
-      const menuList = await this.menuRepository.find();
+      const menuList = await this.menuRepository.findBy({ is_delete: 0 })
       const tree = this.toTree(menuList, 0);
       return tree;
     } catch (e) {
@@ -113,5 +113,42 @@ export class MenuService {
       }
     }
     return result;
+  }
+
+  /**
+   * 获取第一级菜单
+   */
+  getMenuListByTop(){
+    return this.menuRepository.createQueryBuilder().where('pid = 0 and is_delete = 0').getMany();
+  }
+
+
+  /**
+   * 
+   * @param id 菜单ID
+   * @returns 
+   */
+  async deleteMenu(id: string) {
+    try {
+      await this.menuRepository.update(id, { is_delete: 1 });
+      return '删除菜单成功';
+    } catch (e) {
+      throw new HttpException('删除菜单失败', HttpStatus.BAD_REQUEST);
+    }
+  }
+
+
+  /**
+   * 
+   * @param id 菜单ID
+   * @returns 
+   */
+  async getMenu(id: number) {
+    try {
+      const menu = await this.menuRepository.findOneBy({ id: id, is_delete: 0 });
+      return menu;
+    } catch (e) {
+      throw new HttpException('获取菜单失败', HttpStatus.BAD_REQUEST);
+    }
   }
 }
