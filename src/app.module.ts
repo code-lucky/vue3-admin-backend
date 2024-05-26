@@ -11,7 +11,7 @@ import { WinstonModule } from './winston/winston.module';
 import { format, transports } from 'winston';
 import * as chalk from 'chalk';
 import { Constant } from './utils/constant';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { LoginGuard } from './guard/login.guard';
 import { FileModule } from './api/file/file.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
@@ -19,6 +19,8 @@ import { join } from 'path';
 import { MenuModule } from './api/menu/menu.module';
 import { RoleModule } from './api/role/role.module';
 import { RoleDataModule } from './api/role-data/role-data.module';
+import { SystemLogModule } from './api/system-log/system-log.module';
+import { LoggingInterceptor } from './interceptors/logging.interceptor';
 
 @Module({
   imports: [
@@ -29,28 +31,28 @@ import { RoleDataModule } from './api/role-data/role-data.module';
     WinstonModule.forRoot({
       level: 'debug',
       transports: [
-          new transports.Console({
-              format: format.combine(
-                  format.colorize(),
-                  format.printf(({context, level, message, time}) => {
-                      const appStr = chalk.green(`[NEST]`);
-                      const contextStr = chalk.yellow(`[${context}]`);
-  
-                      return `${appStr} ${time} ${level} ${contextStr} ${message} `;
-                  })
-              ),
+        new transports.Console({
+          format: format.combine(
+            format.colorize(),
+            format.printf(({ context, level, message, time }) => {
+              const appStr = chalk.green(`[NEST]`);
+              const contextStr = chalk.yellow(`[${context}]`);
 
-          }),
-          new transports.File({
-              format: format.combine(
-                  format.timestamp(),
-                  format.json()
-              ),
-              filename: `loggger-${Constant.CURRENT_DATE}-${Constant.TIMESTAMP}.log`,
-              dirname: `log/${Constant.CURRENT_DATE}`,
-              maxsize: 1024*1024
-          })
-        ]
+              return `${appStr} ${time} ${level} ${contextStr} ${message} `;
+            })
+          ),
+
+        }),
+        new transports.File({
+          format: format.combine(
+            format.timestamp(),
+            format.json()
+          ),
+          filename: `loggger-${Constant.CURRENT_DATE}-${Constant.TIMESTAMP}.log`,
+          dirname: `log/${Constant.CURRENT_DATE}`,
+          maxsize: 1024 * 1024
+        })
+      ]
     }),
     JwtModule.registerAsync({
       global: true,
@@ -86,7 +88,7 @@ import { RoleDataModule } from './api/role-data/role-data.module';
           connectorPackage: 'mysql2',
           extra: {
             authPlugin: 'sha256_password',
-          }
+          },
         };
       },
       inject: [ConfigService],
@@ -98,7 +100,8 @@ import { RoleDataModule } from './api/role-data/role-data.module';
     FileModule,
     MenuModule,
     RoleModule,
-    RoleDataModule
+    RoleDataModule,
+    SystemLogModule
   ],
   controllers: [AppController],
   providers: [
@@ -106,7 +109,11 @@ import { RoleDataModule } from './api/role-data/role-data.module';
     {
       provide: APP_GUARD,
       useClass: LoginGuard
-    }
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: LoggingInterceptor,
+    },
   ],
 })
-export class AppModule {}
+export class AppModule { }

@@ -19,7 +19,6 @@ export class MenuService {
    * @returns 获取菜单列表
    */
   async menuList(user_id: number) {
-    console.log('user_id', user_id);
     try {
       // 根据用户id获取角色id，然后获取角色关联的menu
       const list = await this.userRepository.createQueryBuilder('user')

@@ -3,7 +3,7 @@ import { Role } from "./role.entity";
 import { Menu } from "./menu.entity";
 
 @Entity({
-    name: 'role-data'
+    name: 'role_data'
 })
 export class RoleData{
 
