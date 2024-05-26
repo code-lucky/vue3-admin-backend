@@ -42,28 +42,33 @@ export class RoleService {
    */
   async createRole(createRoleDto: CreateRoleDto) {
     const { role_name, menu_ids } = createRoleDto;
-    const role = new Role();
-    role.role_name = role_name;
+    const queryRunner = this.roleRepository.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
 
-    
     try {
       // 第一步保存到role表
-      const roleData = await this.roleRepository.save(role);
+      const role = new Role();
+      role.role_name = role_name;
+      const roleData = await queryRunner.manager.save(Role, role);
 
       // 第二步保存到role_data表, 插入多条数据到role_data表
-      const roleDataList = menu_ids.map(menu_id => {
-        return {
-          roleId: roleData.id,
-          menuId: menu_id
-        }
-      });
+      const roleDataList = menu_ids.map(menu_id => ({
+        roleId: roleData.id,
+        menuId: menu_id,
+      }));
 
       // 批量插入
-      await this.roleDataRepository.insert(roleDataList);
+      await queryRunner.manager.insert(RoleData, roleDataList);
+
+      await queryRunner.commitTransaction();
 
       return '创建角色成功';
-    }catch (e) {
-      throw new HttpException('创建角色失败', HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (e) {
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(`创建角色失败: ${e.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+    } finally {
+      await queryRunner.release();
     }
   }
 
@@ -74,28 +79,34 @@ export class RoleService {
    * @returns 
    */
   async updateRole(id: number, updateRoleDto: UpdateRoleDto) {
-    // 第一步删除role_data表中的数据
-    try{
-      await this.roleDataRepository.delete({roleId: id});
+    const queryRunner = this.roleRepository.manager.connection.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      // 第一步删除role_data表中的数据
+      await queryRunner.manager.delete(RoleData, { roleId: id });
 
       // 第二步更新role表中的数据
-      const role = new Role();
-      role.role_name = updateRoleDto.role_name;
-      await this.roleRepository.update({id: id}, role);
+      await queryRunner.manager.update(Role, { id }, { role_name: updateRoleDto.role_name });
 
       // 第三步插入role_data表中的数据
-      const roleDataList = updateRoleDto.menu_ids.map(menu_id => {
-        return {
-          roleId: id,
-          menuId: menu_id
-        }
-      });
+      const roleDataList = updateRoleDto.menu_ids.map(menu_id => ({
+        roleId: id,
+        menuId: menu_id,
+      }));
+
       // 批量插入
-      await this.roleDataRepository.insert(roleDataList);
+      await queryRunner.manager.insert(RoleData, roleDataList);
+
+      await queryRunner.commitTransaction();
 
       return '更新角色成功';
-    }catch (e) {
-      throw new HttpException('更新角色失败', HttpStatus.INTERNAL_SERVER_ERROR);
+    } catch (e) {
+      await queryRunner.rollbackTransaction();
+      throw new HttpException(`更新角色失败: ${e.message}`, HttpStatus.INTERNAL_SERVER_ERROR);
+    } finally {
+      await queryRunner.release();
     }
   }
 
