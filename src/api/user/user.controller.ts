@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Inject, HttpStatus, Query, Req, HttpException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Inject, HttpStatus, Query, Req, HttpException, DefaultValuePipe, ParseIntPipe } from '@nestjs/common';
 import { UserService } from './user.service';
 import { EmailService } from 'src/api/email/email.service';
 import { RedisService } from 'src/redis/redis.service';
@@ -129,7 +129,7 @@ export class UserController {
    * @returns 
    */
   @Get('registerCode')
-  async sendRegisterCode(@Query('email')email: string) {
+  async sendRegisterCode(@Query('email') email: string) {
     return await this.userService.sendRegisterCode(email);
   }
 
@@ -153,9 +153,54 @@ export class UserController {
     return await this.userService.sendForgotPasswordCode(email);
   }
 
-
+  /**
+   * 重置密码
+   * @param email 邮箱
+   * @param captcha 验证码
+   * @returns 
+   */
   @Post('resetPassword')
   async resetPassword(@Query('email') email: string, @Query('captcha') captcha: string) {
     return await this.userService.resetPassword(email, captcha);
+  }
+
+
+  /**
+   * 获取用户列表
+   * @param page 
+   * @param pageSize 
+   * @returns 
+   */
+  @RequireLogin()
+  @Get('userList')
+  async getUserList(
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('pageSize', new DefaultValuePipe(10), ParseIntPipe) pageSize: number
+  ) {
+    return await this.userService.getUserList(page, pageSize);
+  }
+
+  @RequireLogin()
+  @Post('create')
+  async createUser(@Body() createUserDto: CreateUserDto) {
+    return this.userService.createUser(createUserDto);
+  }
+
+  @RequireLogin()
+  @Post('update/:id')
+  async updateUserById(@Param('id') id: number, @Body() updateUserDto: UpdateUserDto) {
+    return this.userService.updateUserById(id, updateUserDto);
+  }
+
+  @RequireLogin()
+  @Delete('delete/:id')
+  async deleteUserById(@Param('id') id: number) {
+    return this.userService.deleteUserById(id);
+  }
+
+  @RequireLogin()
+  @Post('auth/:id')
+  async userAuth(@Param('id') id: number, @Query('role_id') role_id: number) {
+    return this.userService.userAuth(id, role_id);
   }
 }

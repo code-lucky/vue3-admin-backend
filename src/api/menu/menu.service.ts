@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Menu } from '../entitys/menu.entity';
 import { CreateMenuDto } from './dto/create-menu.dto';
 import { UpdateMenuDto } from './dto/update-menu.dto';
+import { User } from '../entitys/user.entity';
 
 @Injectable()
 export class MenuService {
@@ -11,27 +12,37 @@ export class MenuService {
   @InjectRepository(Menu)
   private menuRepository: Repository<Menu>;
 
+  @InjectRepository(User)
+  private userRepository: Repository<User>;
   /**
    * 
    * @returns 获取菜单列表
    */
-  async menuList() {
-    const menuList = await this.menuRepository.
-      createQueryBuilder().
-      select([
-        'menu.id AS id',
-        'menu.menu_name AS menu_name',
-        'menu.pid AS pid',
-        'menu.menu_path AS menu_path',
-        'menu.menu_component AS menu_component',
-        'menu.menu_icon AS menu_icon',
-        'menu.hide AS hide',
-        'menu.sort AS sort',
-        'menu.create_time AS create_time',
-      ]).where('menu.is_delete = 0')
-      .orderBy('menu.sort', 'DESC')
-      .getRawMany();
-    return menuList;
+  async menuList(user_id: number) {
+    console.log('user_id', user_id);
+    try {
+      // 根据用户id获取角色id，然后获取角色关联的menu
+      const list = await this.userRepository.createQueryBuilder('user')
+        .innerJoin('user.role', 'role')
+        .innerJoin('role.roleData', 'roleData')
+        .innerJoin('roleData.menu', 'menu')
+        .select([
+          'menu.id AS id',
+          'menu.menu_name AS menu_name',
+          'menu.pid AS pid',
+          'menu.menu_path AS menu_path',
+          'menu.menu_component AS menu_component',
+          'menu.menu_icon AS menu_icon',
+          'menu.hide AS hide',
+          'menu.sort AS sort',
+          'menu.create_time AS create_time',
+        ])
+        .where('user.id = :id', { id: user_id }).
+        getRawMany();
+      return list;
+    } catch (e) {
+      throw new HttpException('获取菜单列表失败', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
 
@@ -53,7 +64,7 @@ export class MenuService {
       await this.menuRepository.save(menu);
       return '创建菜单成功';
     } catch (e) {
-      throw new HttpException('创建菜单失败', HttpStatus.BAD_REQUEST);
+      throw new HttpException('创建菜单失败', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -73,10 +84,10 @@ export class MenuService {
     menu.sort = menuDto.sort;
 
     try {
-      await this.menuRepository.save(menu);
+      await this.menuRepository.update(menuDto.id, menu);
       return '修改菜单成功';
     } catch (e) {
-      throw new HttpException('修改菜单失败', HttpStatus.BAD_REQUEST);
+      throw new HttpException('修改菜单失败', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -91,7 +102,7 @@ export class MenuService {
       const tree = this.toTree(menuList, 0);
       return tree;
     } catch (e) {
-      throw new HttpException('获取菜单树失败', HttpStatus.BAD_REQUEST);
+      throw new HttpException('获取菜单树失败', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -118,7 +129,7 @@ export class MenuService {
   /**
    * 获取第一级菜单
    */
-  getMenuListByTop(){
+  getMenuListByTop() {
     return this.menuRepository.createQueryBuilder().where('pid = 0 and is_delete = 0').getMany();
   }
 
@@ -133,7 +144,7 @@ export class MenuService {
       await this.menuRepository.update(id, { is_delete: 1 });
       return '删除菜单成功';
     } catch (e) {
-      throw new HttpException('删除菜单失败', HttpStatus.BAD_REQUEST);
+      throw new HttpException('删除菜单失败', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -148,7 +159,7 @@ export class MenuService {
       const menu = await this.menuRepository.findOneBy({ id: id, is_delete: 0 });
       return menu;
     } catch (e) {
-      throw new HttpException('获取菜单失败', HttpStatus.BAD_REQUEST);
+      throw new HttpException('获取菜单失败', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

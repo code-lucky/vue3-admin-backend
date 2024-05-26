@@ -18,6 +18,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { MenuModule } from './api/menu/menu.module';
 import { RoleModule } from './api/role/role.module';
+import { RoleDataModule } from './api/role-data/role-data.module';
 
 @Module({
   imports: [
@@ -96,7 +97,8 @@ import { RoleModule } from './api/role/role.module';
     UserModule,
     FileModule,
     MenuModule,
-    RoleModule
+    RoleModule,
+    RoleDataModule
   ],
   controllers: [AppController],
   providers: [

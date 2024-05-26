@@ -35,10 +35,10 @@ export class RoleData{
     @Column({
         comment: '角色ID'
     })
-    roleId: Number;
+    roleId: number;
 
     @Column({
         comment: '菜单ID'
     })
-    menuId: Number; 
+    menuId: number; 
 }

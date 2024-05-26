@@ -8,6 +8,7 @@ import { InvokeRecordInterceptor } from './interceptors/invoke-record.intercepto
 import { WINSTON_LOGGER_TOKEN } from './winston/winston.module';
 import { CustomExceptionFilter } from './filter/custom-exception.filter';
 import { UnloginFilter } from './guard/unlogin.filter';
+import { FormatDatetimeInterceptor } from './interceptors/format-datetime.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -22,6 +23,7 @@ async function bootstrap() {
 
   // 全局启用
   app.useGlobalPipes(new ValidationPipe())
+  app.useGlobalInterceptors(new FormatDatetimeInterceptor())
   app.useGlobalInterceptors(new FormatResponseInterceptor())
   app.useGlobalInterceptors(new InvokeRecordInterceptor())
   app.useGlobalFilters(new UnloginFilter())

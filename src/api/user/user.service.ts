@@ -37,11 +37,11 @@ export class UserService {
       }
     });
     if (!findUser) {
-      throw new HttpException('用户不存在', HttpStatus.BAD_REQUEST);
+      throw new HttpException('用户不存在', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     if (findUser.password !== md5(user.password)) {
-      throw new HttpException('密码错误', HttpStatus.BAD_REQUEST);
+      throw new HttpException('密码错误', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     const vo = new LoginUserVo();
@@ -75,7 +75,7 @@ export class UserService {
       .getRawOne();
 
     if (!userInfo) {
-      throw new HttpException('用户不存在', HttpStatus.BAD_REQUEST);
+      throw new HttpException('用户不存在', HttpStatus.INTERNAL_SERVER_ERROR);
     }
     return userInfo;
   }
@@ -93,7 +93,7 @@ export class UserService {
     });
 
     if (findUser) {
-      throw new HttpException('用户名已存在', HttpStatus.BAD_REQUEST);
+      throw new HttpException('用户名已存在', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     try {
@@ -105,7 +105,7 @@ export class UserService {
       await this.userRepository.save(addUser);
       return '添加用户成功';
     } catch (e) {
-      throw new HttpException('添加用户失败', HttpStatus.BAD_REQUEST);
+      throw new HttpException('添加用户失败', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -125,15 +125,15 @@ export class UserService {
     });
 
     if (!findUser) {
-      throw new HttpException('用户不存在', HttpStatus.BAD_REQUEST);
+      throw new HttpException('用户不存在', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     if (findUser.password !== md5(passwordDto.old_password)) {
-      throw new HttpException('原密码错误', HttpStatus.BAD_REQUEST);
+      throw new HttpException('原密码错误', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     if (passwordDto.password !== passwordDto.confirm_password) {
-      throw new HttpException('两次密码不一致', HttpStatus.BAD_REQUEST);
+      throw new HttpException('两次密码不一致', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     try {
@@ -141,7 +141,7 @@ export class UserService {
       await this.userRepository.save(findUser);
       return '修改密码成功';
     } catch (err) {
-      throw new HttpException('修改密码失败', HttpStatus.BAD_REQUEST);
+      throw new HttpException('修改密码失败', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -162,7 +162,7 @@ export class UserService {
       await this.userRepository.save(user);
       return '修改用户成功';
     } catch (err) {
-      throw new HttpException('修改用户失败', HttpStatus.BAD_REQUEST);
+      throw new HttpException('修改用户失败', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
   }
@@ -177,16 +177,16 @@ export class UserService {
     const { current_email, email, captcha } = emailObj;
 
     if (current_email === email) {
-      throw new HttpException('新邮箱不能和旧邮箱相同', HttpStatus.BAD_REQUEST);
+      throw new HttpException('新邮箱不能和旧邮箱相同', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     if (!/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/.test(email)) {
-      throw new HttpException('邮箱格式不正确', HttpStatus.BAD_REQUEST);
+      throw new HttpException('邮箱格式不正确', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     const code = await this.redisService.get(`change_email_captcha_${email}`);
     if (code !== captcha) {
-      throw new HttpException('验证码错误', HttpStatus.BAD_REQUEST);
+      throw new HttpException('验证码错误', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     const user = await this.userRepository.findOne({
@@ -197,7 +197,7 @@ export class UserService {
     });
 
     if (user) {
-      throw new HttpException('该邮箱已被使用', HttpStatus.BAD_REQUEST);
+      throw new HttpException('该邮箱已被使用', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     try {
@@ -209,7 +209,7 @@ export class UserService {
 
       return '修改邮箱成功';
     } catch (e) {
-      throw new HttpException('修改邮箱失败', HttpStatus.BAD_REQUEST);
+      throw new HttpException('修改邮箱失败', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -221,11 +221,11 @@ export class UserService {
    */
   async sendEmailCode(email: string, userId: number) {
     if (!email) {
-      throw new HttpException('邮箱不能为空', HttpStatus.BAD_REQUEST);
+      throw new HttpException('邮箱不能为空', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     if (!/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/.test(email)) {
-      throw new HttpException('邮箱格式不正确', HttpStatus.BAD_REQUEST);
+      throw new HttpException('邮箱格式不正确', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     try {
@@ -250,11 +250,11 @@ export class UserService {
    */
   async sendRegisterCode(email: string) {
     if (!email) {
-      throw new HttpException('邮箱不能为空', HttpStatus.BAD_REQUEST);
+      throw new HttpException('邮箱不能为空', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     if (!/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/.test(email)) {
-      throw new HttpException('邮箱格式不正确', HttpStatus.BAD_REQUEST);
+      throw new HttpException('邮箱格式不正确', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     try {
@@ -284,7 +284,7 @@ export class UserService {
     console.log(code, user.captcha);
 
     if (code !== user.captcha) {
-      throw new HttpException('验证码错误', HttpStatus.BAD_REQUEST);
+      throw new HttpException('验证码错误', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     const findUser = await this.userRepository.findOne({
@@ -295,7 +295,7 @@ export class UserService {
     });
 
     if (findUser) {
-      throw new HttpException('用户名已存在', HttpStatus.BAD_REQUEST);
+      throw new HttpException('用户名已存在', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     const userByEmail = await this.userRepository.findOne({
@@ -306,9 +306,9 @@ export class UserService {
     });
 
     if (userByEmail) {
-      throw new HttpException('邮箱已被注册', HttpStatus.BAD_REQUEST);
+      throw new HttpException('邮箱已被注册', HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    
+
     try {
       const addUser = new User();
       addUser.user_name = user.user_name;
@@ -319,7 +319,7 @@ export class UserService {
       await this.redisService.del(`register_captcha_${user.email}`);
       return '注册成功';
     } catch (e) {
-      throw new HttpException('注册失败', HttpStatus.BAD_REQUEST);
+      throw new HttpException('注册失败', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 
@@ -329,11 +329,11 @@ export class UserService {
    */
   async sendForgotPasswordCode(email: string) {
     if (!email) {
-      throw new HttpException('邮箱不能为空', HttpStatus.BAD_REQUEST);
+      throw new HttpException('邮箱不能为空', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     if (!/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/.test(email)) {
-      throw new HttpException('邮箱格式不正确', HttpStatus.BAD_REQUEST);
+      throw new HttpException('邮箱格式不正确', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     const user = await this.userRepository.findOne({
@@ -344,7 +344,7 @@ export class UserService {
     });
 
     if (!user) {
-      throw new HttpException('该邮箱未注册', HttpStatus.BAD_REQUEST);
+      throw new HttpException('该邮箱未注册', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     try {
@@ -368,21 +368,21 @@ export class UserService {
    */
   async resetPassword(email: string, captcha: string) {
     if (!email) {
-      throw new HttpException('邮箱不能为空', HttpStatus.BAD_REQUEST);
+      throw new HttpException('邮箱不能为空', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     if (!captcha) {
-      throw new HttpException('验证码不能为空', HttpStatus.BAD_REQUEST);
+      throw new HttpException('验证码不能为空', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     if (!/^\w+([-+.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/.test(email)) {
-      throw new HttpException('邮箱格式不正确', HttpStatus.BAD_REQUEST);
+      throw new HttpException('邮箱格式不正确', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     const code = await this.redisService.get(`forgot_password_captcha_${email}`);
 
     if (code !== captcha) {
-      throw new HttpException('验证码错误', HttpStatus.BAD_REQUEST);
+      throw new HttpException('验证码错误', HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     try {
@@ -396,7 +396,113 @@ export class UserService {
 
       return '重置密码成功';
     } catch (e) {
-      throw new HttpException('重置密码失败', HttpStatus.BAD_REQUEST);
+      throw new HttpException('重置密码失败', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  /**
+   * 获取用户列表
+   */
+  async getUserList(page: number, pageSize: number) {
+    try {
+      const userList = await this.userRepository.createQueryBuilder()
+        .select([
+          'user.id AS id',
+          'user.user_name AS user_name',
+          'user.head_pic AS head_pic',
+          'user.email AS email',
+          'user.create_time AS create_time',
+          'role.id AS role_id',
+          'role.role_name AS role_name'
+        ])
+        .leftJoin(Role, 'role', 'role.id = user.roleId')
+        .where('user.is_delete = 0')
+        .skip((page - 1) * pageSize)
+        .take(pageSize)
+        .getRawMany();
+      // 获取总条数和总页数和当前是第几页
+      const total = await this.userRepository.createQueryBuilder().leftJoin(Role, 'role', 'role.id = user.roleId').where('user.is_delete = 0').getCount();
+
+      return {
+        list: userList,
+        total: total,
+        page: page,
+        pageSize: pageSize
+      };
+    } catch (e) {
+      throw new HttpException('获取用户列表失败', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+
+  /**
+   * 超管创建用户
+   * @param createUserDto 
+   */
+  async addUser(createUserDto: CreateUserDto) {
+    const findUser = await this.userRepository.findOne({
+      where: {
+        user_name: createUserDto.user_name,
+        is_delete: 0
+      }
+    });
+
+    if (findUser) {
+      throw new HttpException('用户名已存在', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    try {
+      const addUser = new User();
+      addUser.user_name = createUserDto.user_name;
+      addUser.password = md5(createUserDto.password);
+      addUser.head_pic = createUserDto.head_pic;
+      addUser.roleId = createUserDto.roleId;
+      await this.userRepository.save(addUser);
+      return '添加用户成功';
+    } catch (e) {
+      throw new HttpException('添加用户失败', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  /**
+   * 更新用户信息
+   * @param id 
+   * @param updateUserDto 
+   */
+  async updateUserById(id: number, updateUserDto: UpdateUserDto) {
+
+  }
+
+
+  /**
+   * 删除用户
+   * @param id 
+   */
+  async deleteUserById(id: number) {
+    try {
+      await this.userRepository.update(id, {
+        is_delete: 1
+      });
+      return '删除用户成功';
+    } catch (e) {
+      throw new HttpException('删除用户失败', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  /**
+   * 授权权限
+   * @param id 
+   * @param role_id 
+   */
+  async userAuth(id: number, role_id: number) {
+    console.log(id, role_id);
+    try {
+      await this.userRepository.update(id, {
+        roleId: role_id
+      });
+      return '授权成功';
+    } catch (e) {
+      throw new HttpException('授权失败', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

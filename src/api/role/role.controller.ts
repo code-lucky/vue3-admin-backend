@@ -15,4 +15,19 @@ export class RoleController {
   async getRoleList() {
     return this.roleService.roleList();
   }
+
+  @Post('create')
+  async createRole(@Body() createRoleDto: CreateRoleDto) {
+    return this.roleService.createRole(createRoleDto);
+  }
+
+  @Post('update/:id')
+  async updateRole(@Param('id') id: number, @Body() updateRoleDto: UpdateRoleDto) {
+    return this.roleService.updateRole(id, updateRoleDto);
+  }
+
+  @Get('detail/:id')
+  async getRoleDetail(@Param('id') id: number) {
+    return this.roleService.roleDetail(id);
+  }
 }

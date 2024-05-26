@@ -68,11 +68,14 @@ export class User{
     update_time: Date;
 
     @ManyToOne(() => Role, role => role.user)
+    @JoinColumn({
+        name: 'roleId'
+    })
     role: Role;
 
     @Column({
         comment: '角色id',
-        default: 2,
+        default: 1,
     })
     roleId: number;
 }

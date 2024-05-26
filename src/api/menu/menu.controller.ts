@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Inject, Request } from '@nestjs/common';
 import { MenuService } from './menu.service';
 import { RequireLogin } from 'src/decorator/custom.decorator';
 import { CreateMenuDto } from './dto/create-menu.dto';
@@ -12,8 +12,8 @@ export class MenuController {
   private menuService: MenuService;
 
   @Get('menuList')
-  async getMenuList() {
-    return this.menuService.menuList();
+  async getMenuList(@Request() req) {
+    return this.menuService.menuList(req.user.userId);
   }
 
   @Post('createMenu')
