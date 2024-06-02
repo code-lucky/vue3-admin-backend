@@ -14,7 +14,7 @@ import * as fs from 'fs';
 export class FileController {
   constructor(private readonly fileService: FileService) {}
 
-  @Get(':filename')
+  @Get('test/filename')
   async serveImage(@Param('filename') filename: string, @Res() res: Response) {
     try {
       const projectRoot = process.cwd();
