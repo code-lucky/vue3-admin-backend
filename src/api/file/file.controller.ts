@@ -39,7 +39,7 @@ export class FileController {
 
   @Get('video/:filename')
   async getVideos(@Param('filename') filename: string, @Res() res: Response) {
-    const videoPath = join('', filename);; // 路径应指向您的视频文件夹
+    const videoPath = join('D:/softs', filename);; // 路径应指向您的视频文件夹
     const stat = fs.statSync(videoPath);
     const fileSize = stat.size;
     const range = res.req.headers.range;
@@ -69,9 +69,48 @@ export class FileController {
     }
   }
 
+  @Get('videos/:filename')
+  async getVideo(@Param('filename') filename: string, @Res() res: Response) {
+    const videoPath = join('D:/softs', filename);
+    fs.access(videoPath, fs.constants.F_OK, (err) => {
+      if (err) {
+        res.status(404).send('File not found');
+        return;
+      }
+
+      const stat = fs.statSync(videoPath);
+      const fileSize = stat.size;
+      const range = res.req.headers.range;
+
+      if (range) {
+        const parts = range.replace(/bytes=/, "").split("-");
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+        const chunksize = (end - start) + 1;
+        const file = fs.createReadStream(videoPath, { start, end });
+        const head = {
+          'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+          'Accept-Ranges': 'bytes',
+          'Content-Length': chunksize,
+          'Content-Type': 'video/mp4',
+        };
+
+        res.writeHead(206, head);
+        file.pipe(res);
+      } else {
+        const head = {
+          'Content-Length': fileSize,
+          'Content-Type': 'video/mp4',
+        };
+        res.writeHead(200, head);
+        fs.createReadStream(videoPath).pipe(res);
+      }
+    });
+  }
+
   @Get('files')
   getFileName() {
-    const directoryPath = ''
+    const directoryPath = 'D:/softs'
     return this.fileService.getAllFileNames(directoryPath);
   }
 }

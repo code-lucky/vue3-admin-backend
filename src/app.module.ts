@@ -21,6 +21,7 @@ import { RoleModule } from './api/role/role.module';
 import { RoleDataModule } from './api/role-data/role-data.module';
 import { SystemLogModule } from './api/system-log/system-log.module';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
+import { NavigationModule } from './api/navigation/navigation.module';
 
 @Module({
   imports: [
@@ -101,7 +102,8 @@ import { LoggingInterceptor } from './interceptors/logging.interceptor';
     MenuModule,
     RoleModule,
     RoleDataModule,
-    SystemLogModule
+    SystemLogModule,
+    NavigationModule
   ],
   controllers: [AppController],
   providers: [
