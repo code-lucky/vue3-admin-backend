@@ -22,6 +22,8 @@ import { RoleDataModule } from './api/role-data/role-data.module';
 import { SystemLogModule } from './api/system-log/system-log.module';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { NavigationModule } from './api/navigation/navigation.module';
+import { ArticleModule } from './api/article/article.module';
+import { Article } from './api/entitys/article.entity';
 
 @Module({
   imports: [
@@ -84,7 +86,8 @@ import { NavigationModule } from './api/navigation/navigation.module';
           database: configService.get('mysql_server_database'),
           synchronize: true,
           logging: true,
-          entities: [__dirname + '/**/*.entity{.ts,.js}'],
+          // entities: [__dirname + '/**/*.entity{.ts,.js}'],
+          entities: [Article],
           poolSize: 10,
           connectorPackage: 'mysql2',
           extra: {
@@ -103,7 +106,8 @@ import { NavigationModule } from './api/navigation/navigation.module';
     RoleModule,
     RoleDataModule,
     SystemLogModule,
-    NavigationModule
+    NavigationModule,
+    ArticleModule
   ],
   controllers: [AppController],
   providers: [
