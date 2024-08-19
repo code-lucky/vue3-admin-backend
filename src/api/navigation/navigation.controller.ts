@@ -5,30 +5,30 @@ import { UpdateNavigationDto } from './dto/update-navigation.dto';
 
 @Controller('navigation')
 export class NavigationController {
-  constructor(private readonly navigationService: NavigationService) {}
+  constructor(private readonly navigationService: NavigationService) { }
 
-  @Post()
-  create(@Body() createNavigationDto: CreateNavigationDto) {
-    return this.navigationService.create(createNavigationDto);
+  @Get('list')
+  async getList() {
+    return await this.navigationService.getList();
   }
 
-  @Get()
-  findAll() {
-    return this.navigationService.findAll();
+  @Get('detail/:id')
+  async findOne(@Param('id') id: string) {
+    return await this.navigationService.getNavigationById(+id);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.navigationService.findOne(+id);
+  @Post('create')
+  async create(@Body() createNavigationDto: CreateNavigationDto) {
+    return await this.navigationService.createNavigation(createNavigationDto);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateNavigationDto: UpdateNavigationDto) {
-    return this.navigationService.update(+id, updateNavigationDto);
+  @Post('update')
+  async update(@Body() updateNavigationDto: UpdateNavigationDto) {
+    return await this.navigationService.updateNavigation(updateNavigationDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.navigationService.remove(+id);
+  @Post('delete/:id')
+  async remove(@Param('id') id: string) {
+    return await this.navigationService.delNavigation(+id);
   }
 }

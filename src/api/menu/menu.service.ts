@@ -81,6 +81,7 @@ export class MenuService {
     menu.menu_component = menuDto.menu_component;
     menu.menu_icon = menuDto.menu_icon;
     menu.sort = menuDto.sort;
+    menu.hide = menuDto.hide;
 
     try {
       await this.menuRepository.update(menuDto.id, menu);

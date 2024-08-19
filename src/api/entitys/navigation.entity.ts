@@ -1,10 +1,10 @@
 import { BaseEntity } from "src/base-entity/BaseEntity";
-import { Column, Entity, PrimaryColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, PrimaryColumn, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity('navigation')
 export class Navigation extends BaseEntity {
 
-    @PrimaryColumn()
+    @PrimaryGeneratedColumn()
     id: number;
 
     @Column({
@@ -25,7 +25,7 @@ export class Navigation extends BaseEntity {
 
     @Column({
         comment: '导航图标',
+        nullable: true
     })
     icon: string;
-    
 }

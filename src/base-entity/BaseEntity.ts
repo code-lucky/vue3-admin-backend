@@ -1,8 +1,7 @@
 import { Column, PrimaryGeneratedColumn, CreateDateColumn, UpdateDateColumn } from "typeorm";
 
 export abstract class BaseEntity {
-
-    @Column({name: 'sort', comment: '排序', default: 0})
+    @Column({ name: 'sort', comment: '排序', default: 0 })
     sort: number;
 
     @Column({ name: 'status', comment: '状态0是显示，1是不显示', default: 0 })

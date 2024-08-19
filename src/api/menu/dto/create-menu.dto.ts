@@ -19,6 +19,11 @@ export class CreateMenuDto {
     menu_icon: string;
 
     @IsNotEmpty({
+        message: 'Hide Not Null'
+    })
+    hide: number;
+
+    @IsNotEmpty({
         message: '排序不能为空'
     })
     sort: number;
