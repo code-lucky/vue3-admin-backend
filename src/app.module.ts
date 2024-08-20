@@ -23,7 +23,8 @@ import { SystemLogModule } from './api/system-log/system-log.module';
 import { LoggingInterceptor } from './interceptors/logging.interceptor';
 import { NavigationModule } from './api/navigation/navigation.module';
 import { ArticleModule } from './api/article/article.module';
-import { Article } from './api/entitys/article.entity';
+import { Pricing } from './api/entitys/pricing.entity';
+import { PricingModule } from './api/pricing/pricing.module';
 
 @Module({
   imports: [
@@ -84,10 +85,10 @@ import { Article } from './api/entitys/article.entity';
           username: configService.get('mysql_server_username'),
           password: configService.get('mysql_server_password'),
           database: configService.get('mysql_server_database'),
-          synchronize: true,
+          synchronize: false,
           logging: true,
-          // entities: [__dirname + '/**/*.entity{.ts,.js}'],
-          entities: [Article],
+          entities: [__dirname + '/**/*.entity{.ts,.js}'],
+          // entities: [Pricing],
           poolSize: 10,
           connectorPackage: 'mysql2',
           extra: {
@@ -107,7 +108,8 @@ import { Article } from './api/entitys/article.entity';
     RoleDataModule,
     SystemLogModule,
     NavigationModule,
-    ArticleModule
+    ArticleModule,
+    PricingModule
   ],
   controllers: [AppController],
   providers: [

@@ -9,6 +9,7 @@ import { WINSTON_LOGGER_TOKEN } from './winston/winston.module';
 import { CustomExceptionFilter } from './filter/custom-exception.filter';
 import { UnloginFilter } from './guard/unlogin.filter';
 import { FormatDatetimeInterceptor } from './interceptors/format-datetime.interceptor';
+import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -29,6 +30,10 @@ async function bootstrap() {
   app.useGlobalFilters(new UnloginFilter())
   app.useGlobalFilters(new CustomExceptionFilter())
   
+  // 这里设置请求体的大小限制，例如50mb
+  app.use(bodyParser.json({ limit: '10mb' }));
+  app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
+
   const config = new DocumentBuilder()
     .setTitle('nest-cli')
     .setDescription('api接口文档')

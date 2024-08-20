@@ -10,7 +10,6 @@ export class SystemLogService {
   private systemLogRepository: Repository<SystemLog>;
 
   async getList(page: number, pageSize: number) {
-    console.log(page, pageSize)
     try {
       const list = await this.systemLogRepository.find({
         order: {

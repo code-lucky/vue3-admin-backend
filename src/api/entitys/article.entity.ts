@@ -26,6 +26,13 @@ export class Article extends BaseEntity {
 
     @Column({
         comment: '文章分类',
+        default: 0
     })
     type: number;
+
+    @Column({
+        comment: '封面图片',
+        nullable: true
+    })
+    cover_img: string;
 }
